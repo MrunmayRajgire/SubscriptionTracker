@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jsonwebtoken from "jsonwebtoken";
-import { JWT_EXPIRES_IN } from "../config/env.js"
+import { JWT_EXPIRES_IN,JWT_SECRET } from "../config/env.js"
 
 export const signUp = async (req, res, next) => {
     //Implementation for user signup
@@ -11,7 +11,7 @@ export const signUp = async (req, res, next) => {
 
     try{
         //create new user
-        const {name,email,password} = req.bosy();
+        const {name,email,password} = req.body();
 
         const existingUser = await User.findOne({email});
 
@@ -49,6 +49,37 @@ export const signUp = async (req, res, next) => {
 
 export const signIn = async (req, res, next) => {
     //Implementation for user sign in
+    try{   
+        const {email,password} = req.body();
+
+        const user = await User.findOne({email});
+
+        if(!user)
+        {
+            const error = new Error("User nto found");
+            error.statusCode = 404;
+            throw error;
+        }
+        const isPasswordValid = await bcrypt.compare(password,user.password);
+        if(!isPasswordValid)
+        {
+            const error = new Error("Invalid Password");
+            error.statusCode = 401;
+            throw error;
+        }
+        const token = jsonwebtoken.sign({userId:user._id}, JWT_SECRET, {expiresIn:JWT_EXPIRES_IN});
+
+        res.staus(200).json({
+            success:true,
+            message:"User signed in successfully",
+            data: {
+                token,
+                user
+            }
+        });
+    }   catch(error)    {
+        next(error);
+    }
 }
 
 export const signOut = async (req, res, next) => {
