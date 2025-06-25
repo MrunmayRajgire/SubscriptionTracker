@@ -22,7 +22,7 @@ app.get("/",(req,res)=>{
     res.send("Welcome");
 });
 
-app.listen(3000,async ()=>{
+app.listen(PORT,async ()=>{
     console.log(`Server running on localhost:${PORT}`);
 
     await connectToDatabase();

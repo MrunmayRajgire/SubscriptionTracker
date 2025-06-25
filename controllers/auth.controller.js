@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
-import jsonwebtoken from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { JWT_EXPIRES_IN,JWT_SECRET } from "../config/env.js"
 
 export const signUp = async (req, res, next) => {
@@ -28,7 +28,7 @@ export const signUp = async (req, res, next) => {
 
         const NewUsers = await User.create([{name,email,password:hashedPassword}],{session});
 
-        const token = jsonwebtoken.sign({userId : NewUsers[0]._id}, JWT_SECRET, {expiresIn:JWT_EXPIRES_IN});
+        const token = jwt.sign({userId : NewUsers[0]._id}, JWT_SECRET, {expiresIn:JWT_EXPIRES_IN});
 
         await session.commitTransaction();
         session.endSession();
@@ -67,7 +67,7 @@ export const signIn = async (req, res, next) => {
             error.statusCode = 401;
             throw error;
         }
-        const token = jsonwebtoken.sign({userId:user._id}, JWT_SECRET, {expiresIn:JWT_EXPIRES_IN});
+        const token = jwt.sign({userId:user._id}, JWT_SECRET, {expiresIn:JWT_EXPIRES_IN});
 
         res.staus(200).json({
             success:true,
